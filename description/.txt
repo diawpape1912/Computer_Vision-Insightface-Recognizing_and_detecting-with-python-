@@ -1,0 +1,235 @@
+PROJET : SYSTÈME DE RECONNAISSANCE FACIALE EN TEMPS RÉEL
+=====================================================
+
+1. PRÉSENTATION GÉNÉRALE
+-----------------------
+Ce projet consiste à développer un système de reconnaissance faciale
+basé sur l’intelligence artificielle, capable de :
+
+- reconnaître des personnes connues en temps réel via une webcam
+- reconnaître une personne à partir d’une image fournie (glisser-déposer)
+- identifier les visages inconnus
+- fonctionner à partir d’une base de signatures numériques (embeddings)
+
+Le système repose sur des modèles de Computer Vision et de Deep Learning,
+notamment InsightFace, OpenCV et NumPy.
+
+
+2. PRINCIPE DE FONCTIONNEMENT GLOBAL
+-----------------------------------
+
+Le projet repose sur une idée simple :
+
+Un visage → devient un vecteur de nombres → est comparé à une base existante
+
+Illustration :
+
+    [ Image du visage ]
+             |
+             v
+    [ Modèle IA (InsightFace) ]
+             |
+             v
+    [ Embedding = signature numérique ]                
+             |
+             v
+    [ Comparaison avec la base ]
+             |
+             v
+    [ Nom de la personne ou "Inconnu" ] 
+
+
+3. STRUCTURE DES DONNÉES
+-----------------------
+
+Le dossier data/ contient toutes les données nécessaires au projet.
+
+Structure :
+
+    data/
+    ├── raw/
+    ├── processed/
+    └── embeddings/
+
+
+3.1 data/raw/  (données brutes)
+-------------------------------
+Ce dossier contient les photos originales des personnes.
+Ces photos ne sont jamais modifiées.
+
+Exemple :
+
+    raw/
+    ├── person_01/
+    │   ├── img1.jpg
+    │   ├── img2.jpg
+    │   └── img3.jpg
+    └── person_02/
+        ├── img1.jpg
+        └── img2.jpg
+
+Chaque sous-dossier correspond à une personne.
+
+
+3.2 data/processed/  (visages traités)
+--------------------------------------
+Ce dossier contient uniquement les visages découpés à partir des photos
+brutes.
+
+Traitements effectués :
+- détection du visage
+- découpage
+- redimensionnement
+- alignement si nécessaire
+
+Exemple :
+
+    processed/
+    ├── person_01/
+    │   ├── face1.jpg
+    │   └── face2.jpg
+    └── person_02/
+        └── face1.jpg
+
+Ces fichiers sont générés automatiquement par le programme.
+
+
+3.3 data/embeddings/  (signatures numériques)
+---------------------------------------------
+Ce dossier contient les embeddings des visages, sous forme de fichiers
+NumPy (.npy).
+
+Un embedding est un vecteur numérique représentant un visage.
+
+Exemple :
+
+    embeddings/
+    ├── person_01.npy
+    └── person_02.npy
+
+Contenu logique d’un fichier .npy :
+
+    [
+      [0.12, -0.44, 0.89, ..., 0.03],
+      [0.11, -0.45, 0.87, ..., 0.04]
+    ]
+
+Chaque ligne correspond à un visage de la personne.
+
+
+4. GÉNÉRATION DE LA BASE D’EMBEDDINGS
+------------------------------------
+
+Cette étape est effectuée UNE SEULE FOIS (ou lors de l’ajout d’une nouvelle personne).
+
+Pipeline :
+
+    raw/ images
+        |
+        v
+    détection + découpe
+        |
+        v
+    processed/ visages
+        |
+        v
+    InsightFace
+        |
+        v
+    embeddings (.npy)
+
+Cette étape est implémentée dans un fichier dédié :
+    src/embeddings.py
+
+
+5. RECONNAISSANCE EN TEMPS RÉEL (WEBCAM)
+---------------------------------------
+
+Le système fonctionne en boucle continue.
+
+Illustration :
+
+    Webcam ON
+        |
+        v
+    Capture d'une frame
+        |
+        v
+    Détection du visage
+        |
+        v
+    Calcul de l'embedding (temps réel)
+        |
+        v
+    Comparaison avec data/embeddings/
+        |
+        v
+    Affichage du résultat sur la vidéo
+
+
+Important :
+- les embeddings de la webcam ne sont PAS sauvegardés
+- ils servent uniquement à la comparaison
+
+
+6. RECONNAISSANCE PAR IMAGE (UPLOAD)
+-----------------------------------
+
+L’utilisateur fournit une image contenant un visage.
+
+Pipeline :
+
+    Image uploadée
+        |
+        v
+    Détection du visage
+        |
+        v
+    Calcul de l'embedding
+        |
+        v
+    Comparaison avec la base
+        |
+        v
+    Résultat affiché (nom ou inconnu)
+
+
+7. ARCHITECTURE LOGICIELLE
+-------------------------
+
+    src/
+    ├── camera.py        -> gestion de la webcam
+    ├── upload.py        -> reconnaissance via image
+    ├── detection.py     -> détection des visages
+    ├── embeddings.py    -> génération de la base
+    ├── recognition.py  -> comparaison des embeddings
+    └── utils.py         -> fonctions utilitaires
+
+    main.py              -> point d’entrée du programme
+
+
+8. LIBRAIRIES UTILISÉES
+----------------------
+
+- OpenCV (cv2) : capture vidéo, traitement d’image
+- NumPy : calculs numériques, gestion des embeddings
+- InsightFace : génération des embeddings faciaux
+- Pillow (PIL) : chargement d’images
+- Matplotlib : visualisation (tests, notebooks)
+- MediaPipe (optionnel) : détection alternative des visages
+
+
+9. OBJECTIF FINAL
+----------------
+Obtenir un système :
+- rapide
+- modulaire
+- extensible
+- utilisable en temps réel
+- capable de reconnaître des visages connus ou inconnus
+
+Ce projet constitue une base solide pour :
+- contrôle d’accès
+- authentification biométrique
+- surveillance intelligente
+- projets avancés en Computer Vision
